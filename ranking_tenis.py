@@ -1,9 +1,52 @@
 import pandas as pd
 import streamlit as st
 from datetime import datetime
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+# Authenticate and connect to Google Sheets
+def authenticate_gsheet(json_keyfile, sheet_name):
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(json_keyfile, scope)
+    client = gspread.authorize(credentials)
+    return client.open(sheet_name)
+
+# Load data from Google Sheets
+def load_data(sheet):
+    rankings_sheet = sheet.worksheet("Rankings")
+    match_history_sheet = sheet.worksheet("Match History")
+
+    # Load Rankings
+    rankings_data = rankings_sheet.get_all_records()
+    rankings = pd.DataFrame(rankings_data)
+
+    # Load Match History
+    match_history_data = match_history_sheet.get_all_records()
+    match_history = pd.DataFrame(match_history_data)
+
+    return rankings, match_history
+
+# Save data to Google Sheets
+def save_data(sheet, rankings, match_history):
+    rankings_sheet = sheet.worksheet("Rankings")
+    match_history_sheet = sheet.worksheet("Match History")
+
+    # Save Rankings
+    rankings_sheet.clear()
+    rankings_sheet.update([rankings.columns.values.tolist()] + rankings.values.tolist())
+
+    # Save Match History
+    match_history_sheet.clear()
+    match_history_sheet.update([match_history.columns.values.tolist()] + match_history.values.tolist())
+
+# Initialize Google Sheets
+json_keyfile = "path/to/your/service_account.json"  # Replace with the path to your JSON key file
+sheet_name = "Tennis Rankings and Match History"   # Replace with your Google Sheet name
+sheet = authenticate_gsheet(json_keyfile, sheet_name)
+
 
 # Initialize default data
-players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Bozzo"]
+players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Hans"]
 points = [1000 for _ in players]
 
 # Initialize session state for rankings and match history
