@@ -13,7 +13,7 @@ def authenticate_gsheet(sheet_name):
 
 # Initialize default data for Rankings and Match History
 def initialize_data(sheet):
-    players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Bozzo"]
+    players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Hans"]
     points = [1000 for _ in players]
 
     # Initialize Rankings
