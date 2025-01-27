@@ -11,6 +11,29 @@ def authenticate_gsheet(sheet_name):
     client = gspread.authorize(credentials)
     return client.open(sheet_name)
 
+# Initialize default data for Rankings and Match History
+def initialize_data(sheet):
+    players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Bozzo"]
+    points = [1000 for _ in players]
+
+    # Initialize Rankings
+    rankings_sheet = sheet.worksheet("Rankings")
+    if len(rankings_sheet.get_all_records()) == 0:
+        rankings_df = pd.DataFrame({
+            "Player": players,
+            "Points": points,
+            "Matches Played": [0 for _ in players],
+            "Wins": [0 for _ in players],
+            "Losses": [0 for _ in players],
+        })
+        rankings_sheet.update([rankings_df.columns.values.tolist()] + rankings_df.values.tolist())
+
+    # Initialize Match History
+    match_history_sheet = sheet.worksheet("Match History")
+    if len(match_history_sheet.get_all_records()) == 0:
+        match_history_df = pd.DataFrame(columns=["Date", "Winner", "Loser", "Points Exchanged"])
+        match_history_sheet.update([match_history_df.columns.values.tolist()])
+
 # Load data from Google Sheets
 def load_data(sheet):
     rankings_sheet = sheet.worksheet("Rankings")
@@ -42,6 +65,9 @@ def save_data(sheet, rankings, match_history):
 # Connect to Google Sheets
 sheet_name = "Tennis Rankings and Match History"  # Replace with the name of your Google Sheet
 sheet = authenticate_gsheet(sheet_name)
+
+# Initialize data if sheets are empty
+initialize_data(sheet)
 
 # Load data from Google Sheets
 rankings, match_history = load_data(sheet)
