@@ -52,7 +52,7 @@ if menu == "See Rankings":
     # Add a rank column based on the updated ranking order
     rankings = st.session_state.rankings.copy()
     rankings.insert(0, "Rank", range(1, len(rankings) + 1))
-    st.table(rankings)
+    st.dataframe(rankings.set_index("Rank"))  # Use Rank as the index to remove the unnamed index column
 
 elif menu == "See Match History":
     st.header("📜 Match History")
@@ -78,5 +78,4 @@ elif menu == "Record a Match":
                 # Display updated rankings with correct rank numbers
                 updated_rankings = st.session_state.rankings.copy()
                 updated_rankings.insert(0, "Rank", range(1, len(updated_rankings) + 1))
-                st.table(updated_rankings)
-
+                st.dataframe(updated_rankings.set_index("Rank"))  # Use Rank as the index to remove the unnamed index column
