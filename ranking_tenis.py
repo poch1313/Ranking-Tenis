@@ -3,7 +3,7 @@ import streamlit as st
 from datetime import datetime
 
 # Initialize default data
-players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Bozzo"]
+players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Hans","Feña"]
 points = [1000 for _ in players]
 
 # Initialize session state for rankings and match history
