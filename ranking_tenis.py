@@ -120,23 +120,23 @@ def record_match(winner, loser, base_points=50, upset_multiplier=1.5):
 # Streamlit App
 st.title("🎾 Tennis Rankings and Match Tracker")
 
-menu = st.sidebar.selectbox("Menu", ["See Rankings", "See Match History", "Record a Match"])
+menu = st.sidebar.selectbox("Menu", ["Ver Ranking", "Ver Historial de Partidos", "Anotar Resultado"])
 
-if menu == "See Rankings":
+if menu == "Ver Ranking":
     st.header("📊 Current Rankings")
     # Add a rank column based on the updated ranking order
     rankings = st.session_state.rankings.copy()
     rankings.insert(0, "Rank", range(1, len(rankings) + 1))
     st.dataframe(rankings.set_index("Rank"))  # Use Rank as the index to remove the unnamed index column
 
-elif menu == "See Match History":
+elif menu == "Ver Historial de Partidos":
     st.header("📜 Match History")
     if st.session_state.match_history.empty:
         st.write("No matches have been recorded yet.")
     else:
         st.table(st.session_state.match_history)
 
-elif menu == "Record a Match":
+elif menu == "Anotar Resultado":
     st.header("🏅 Record a Match Result")
     st.write("Enter the winner and loser from the dropdown options below.")
     with st.form("match_form"):
