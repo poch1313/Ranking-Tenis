@@ -3,7 +3,7 @@ import streamlit as st
 from datetime import datetime
 
 # Initialize default data
-players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Hans","Feña"]
+players = ["Marinkovic", "Joseto", "Hernan", "Pavez", "Bozzo", "Bishara", "Hederra", "Poch", "Juande", "Bozzo"]
 points = [1000 for _ in players]
 
 # Initialize session state for rankings and match history
@@ -31,7 +31,7 @@ def record_match(winner, loser, base_points=50, upset_multiplier=1.5):
     rankings.loc[rankings['Player'] == winner, 'Points'] += points_exchanged
     rankings.loc[rankings['Player'] == loser, 'Points'] -= points_exchanged
     rankings['Points'] = rankings['Points'].clip(lower=0)
-    rankings.sort_values(by="Points", ascending=False, inplace=True)
+    rankings.sort_values(by="Points", ascending=False, inplace=True, ignore_index=True)
 
     # Add match to history
     new_match = {
@@ -49,7 +49,10 @@ menu = st.sidebar.selectbox("Menu", ["See Rankings", "See Match History", "Recor
 
 if menu == "See Rankings":
     st.header("📊 Current Rankings")
-    st.table(st.session_state.rankings)
+    # Add a rank column based on the updated ranking order
+    rankings = st.session_state.rankings.copy()
+    rankings.insert(0, "Rank", range(1, len(rankings) + 1))
+    st.table(rankings)
 
 elif menu == "See Match History":
     st.header("📜 Match History")
@@ -72,4 +75,8 @@ elif menu == "Record a Match":
                 record_match(winner, loser)
                 st.success(f"Match recorded: {winner} defeated {loser}.")
                 st.header("Updated Rankings")
-                st.table(st.session_state.rankings)
+                # Display updated rankings with correct rank numbers
+                updated_rankings = st.session_state.rankings.copy()
+                updated_rankings.insert(0, "Rank", range(1, len(updated_rankings) + 1))
+                st.table(updated_rankings)
+
