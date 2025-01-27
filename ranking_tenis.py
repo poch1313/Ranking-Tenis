@@ -18,10 +18,7 @@ points = [1000 for _ in players]
 # Create a DataFrame to store rankings
 rankings = pd.DataFrame({"Player": players, "Points": points})
 
-# @title
-import pandas as pd
-from IPython.display import display, HTML
-from datetime import datetime
+
 
 
 # Function to record a match and update rankings
@@ -91,10 +88,7 @@ def display_match_history():
 
 match_history = pd.DataFrame(columns=["Date", "Winner", "Loser", "Points Exchanged"])
 
-# @title
-import pandas as pd
-from datetime import datetime
-from IPython.display import clear_output
+
 
 # Assuming rankings and match_history DataFrames are imported from the main code
 # rankings and match_history should already be initialized
