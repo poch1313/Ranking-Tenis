@@ -8,7 +8,13 @@ points = [1000 for _ in players]
 
 # Initialize session state for rankings and match history
 if "rankings" not in st.session_state:
-    st.session_state.rankings = pd.DataFrame({"Player": players, "Points": points})
+    st.session_state.rankings = pd.DataFrame({
+        "Player": players,
+        "Points": points,
+        "Matches Played": [0 for _ in players],
+        "Wins": [0 for _ in players],
+        "Losses": [0 for _ in players]
+    })
 
 if "match_history" not in st.session_state:
     st.session_state.match_history = pd.DataFrame(columns=["Date", "Winner", "Loser", "Points Exchanged"])
@@ -32,6 +38,12 @@ def record_match(winner, loser, base_points=50, upset_multiplier=1.5):
     rankings.loc[rankings['Player'] == loser, 'Points'] -= points_exchanged
     rankings['Points'] = rankings['Points'].clip(lower=0)
     rankings.sort_values(by="Points", ascending=False, inplace=True, ignore_index=True)
+
+    # Update matches played, wins, and losses
+    rankings.loc[rankings['Player'] == winner, 'Matches Played'] += 1
+    rankings.loc[rankings['Player'] == loser, 'Matches Played'] += 1
+    rankings.loc[rankings['Player'] == winner, 'Wins'] += 1
+    rankings.loc[rankings['Player'] == loser, 'Losses'] += 1
 
     # Add match to history
     new_match = {
