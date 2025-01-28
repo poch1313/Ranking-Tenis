@@ -38,7 +38,6 @@ def initialize_data(sheet):
 def load_data(sheet):
     rankings_sheet = sheet.worksheet("Rankings")
     match_history_sheet = sheet.worksheet("Match History")
-    player_info_sheet = sheet.worksheet("Player Info")
 
     # Load Rankings
     rankings_data = rankings_sheet.get_all_records()
@@ -47,12 +46,8 @@ def load_data(sheet):
     # Load Match History
     match_history_data = match_history_sheet.get_all_records()
     match_history = pd.DataFrame(match_history_data)
-    
-    # Load Player Info
-    player_info_data = player_info_sheet.get_all_records()
-    player_info = pd.DataFrame(player_info_data)
 
-    return rankings, match_history, player_info
+    return rankings, match_history
 
 # Save data to Google Sheets
 def save_data(sheet, rankings, match_history):
@@ -75,7 +70,7 @@ sheet = authenticate_gsheet(sheet_name)
 initialize_data(sheet)
 
 # Load data from Google Sheets
-rankings, match_history, player_info = load_data(sheet)
+rankings, match_history = load_data(sheet)
 
 # Initialize session state with data from Google Sheets
 if "rankings" not in st.session_state:
@@ -84,9 +79,6 @@ if "rankings" not in st.session_state:
 if "match_history" not in st.session_state:
     st.session_state.match_history = match_history
 
-if "player_info" not in st.session_state:
-    st.session_state.player_info = player_info
-    
 # Function to record a match and update rankings
 def record_match(winner, loser, base_points=50, upset_multiplier=1.5):
     rankings = st.session_state.rankings
@@ -131,88 +123,12 @@ st.title("🎾 Ranking Shishi de Tenis")
 menu = st.sidebar.selectbox("Menu", ["Ver Ranking", "Ver Historial de Partidos", "Anotar Resultado"])
 
 if menu == "Ver Ranking":
-    st.header("📊 Current Rankings - Gradual Build")
+    st.header("📊 Ranking Actual")
+    # Add a rank column based on the updated ranking order
+    rankings = st.session_state.rankings.copy()
+    rankings.insert(0, "Rank", range(1, len(rankings) + 1))
+    st.dataframe(rankings.set_index("Rank"))  # Use Rank as the index to remove the unnamed index column
 
-    # Merge Rankings with Player Info
-    rankings_with_info = pd.merge(
-        st.session_state.rankings,
-        st.session_state.player_info,
-        on="Player",
-        how="left"
-    )
-
-    # Replace missing descriptions and images with placeholders
-    rankings_with_info["Description"].fillna("No description available.", inplace=True)
-    rankings_with_info["Image URL"].fillna("https://via.placeholder.com/100", inplace=True)
-
-    # Start the HTML table
-    table_html = """
-    <style>
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #f9f9f9;
-            color: #000;
-            text-align: center;
-            border-radius: 5px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-        }
-        .tooltip img {
-            max-width: 100px;
-            height: auto;
-            border-radius: 6px;
-        }
-    </style>
-    <div>
-        <table style="border: 1px solid black; width: 100%; text-align: center;">
-            <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Points</th>
-                <th>Matches Played</th>
-                <th>Wins</th>
-                <th>Losses</th>
-            </tr>
-    """
-
-    # Add rows dynamically
-    for idx, row in rankings_with_info.iterrows():
-        table_html += f"""
-        <tr>
-            <td>{idx + 1}</td>
-            <td>
-                <div class="tooltip">
-                    {row['Player']}
-                    <span class="tooltiptext">
-                        <strong>{row['Player']}</strong><br>
-                        {row['Description']}<br>
-                        <img src="{row['Image URL']}" alt="{row['Player']}">
-                    </span>
-                </div>
-            </td>
-            <td>{row['Points']}</td>
-            <td>{row['Matches Played']}</td>
-            <td>{row['Wins']}</td>
-            <td>{row['Losses']}</td>
-        </tr>
-        """
-    table_html += "</table></div>"
-
-    # Render the table
-    st.markdown(table_html, unsafe_allow_html=True)
-    
 elif menu == "Ver Historial de Partidos":
     st.header("📜 Historial de Partidos")
     if st.session_state.match_history.empty:
