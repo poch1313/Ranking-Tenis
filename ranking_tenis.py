@@ -144,9 +144,25 @@ if menu == "Ver Ranking":
         how="left"
     )
 
-    # Build a custom HTML table with hover tooltips
+    # Replace missing descriptions and images with placeholders
+    rankings_with_info["Description"].fillna("No description available.", inplace=True)
+    rankings_with_info["Image URL"].fillna("https://via.placeholder.com/100", inplace=True)
+
+    # Create a custom HTML table with hover tooltips
     table_html = """
     <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
         .tooltip {
             position: relative;
             display: inline-block;
@@ -157,11 +173,11 @@ if menu == "Ver Ranking":
             background-color: #f9f9f9;
             color: #000;
             text-align: left;
-            border-radius: 5px;
+            border-radius: 6px;
             padding: 10px;
             position: absolute;
             z-index: 1;
-            bottom: 125%; /* Position above the text */
+            bottom: 125%;
             left: 50%;
             margin-left: -150px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -172,10 +188,10 @@ if menu == "Ver Ranking":
         .tooltip img {
             max-width: 100%;
             height: auto;
-            border-radius: 5px;
+            border-radius: 6px;
         }
     </style>
-    <table border="1" style="width: 100%; border-collapse: collapse; text-align: center;">
+    <table>
         <tr>
             <th>Rank</th>
             <th>Player</th>
@@ -208,7 +224,7 @@ if menu == "Ver Ranking":
         """
     table_html += "</table>"
 
-    # Display the custom table
+    # Render the HTML table
     st.markdown(table_html, unsafe_allow_html=True)
     
 elif menu == "Ver Historial de Partidos":
