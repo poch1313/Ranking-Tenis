@@ -38,6 +38,7 @@ def initialize_data(sheet):
 def load_data(sheet):
     rankings_sheet = sheet.worksheet("Rankings")
     match_history_sheet = sheet.worksheet("Match History")
+    player_info_sheet = sheet.worksheet("Player Info")
 
     # Load Rankings
     rankings_data = rankings_sheet.get_all_records()
