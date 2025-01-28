@@ -131,101 +131,58 @@ st.title("🎾 Ranking Shishi de Tenis")
 menu = st.sidebar.selectbox("Menu", ["Ver Ranking", "Ver Historial de Partidos", "Anotar Resultado"])
 
 if menu == "Ver Ranking":
-    st.header("📊 Ranking Actual")
-    # Add a rank column based on the updated ranking order
-    rankings = st.session_state.rankings.copy()
-    rankings.insert(0, "Rank", range(1, len(rankings) + 1))
-    
-    # Merge Rankings with Player Info
-    rankings_with_info = pd.merge(
-        st.session_state.rankings,
-        st.session_state.player_info,
-        on="Player",
-        how="left"
-    )
+    st.header("📊 Current Rankings - Test Minimal HTML")
 
-    # Replace missing descriptions and images with placeholders
-    rankings_with_info["Description"].fillna("No description available.", inplace=True)
-    rankings_with_info["Image URL"].fillna("https://via.placeholder.com/100", inplace=True)
-
-    # Create a custom HTML table with hover tooltips
-    table_html = """
+    # Minimal HTML with a tooltip for testing
+    test_html = """
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
         .tooltip {
             position: relative;
             display: inline-block;
         }
         .tooltip .tooltiptext {
             visibility: hidden;
-            width: 300px;
+            width: 200px;
             background-color: #f9f9f9;
             color: #000;
-            text-align: left;
-            border-radius: 6px;
-            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            padding: 5px;
             position: absolute;
             z-index: 1;
             bottom: 125%;
             left: 50%;
-            margin-left: -150px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            margin-left: -100px;
         }
         .tooltip:hover .tooltiptext {
             visibility: visible;
         }
-        .tooltip img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 6px;
-        }
     </style>
-    <table>
-        <tr>
-            <th>Rank</th>
-            <th>Player</th>
-            <th>Points</th>
-            <th>Matches Played</th>
-            <th>Wins</th>
-            <th>Losses</th>
-        </tr>
+    <div>
+        <table style="border: 1px solid black; width: 100%; text-align: center;">
+            <tr>
+                <th>Player</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>
+                    <div class="tooltip">
+                        Example Player
+                        <span class="tooltiptext">
+                            <strong>Example Player</strong><br>
+                            Test Description<br>
+                            <img src="https://via.placeholder.com/100" alt="Example Player">
+                        </span>
+                    </div>
+                </td>
+                <td>Test Description</td>
+            </tr>
+        </table>
+    </div>
     """
 
-    for idx, row in rankings_with_info.iterrows():
-        table_html += f"""
-        <tr>
-            <td>{idx + 1}</td>
-            <td>
-                <div class="tooltip">
-                    {row['Player']}
-                    <span class="tooltiptext">
-                        <strong>{row['Player']}</strong><br>
-                        {row['Description']}<br>
-                        <img src="{row['Image URL']}" alt="{row['Player']}">
-                    </span>
-                </div>
-            </td>
-            <td>{row['Points']}</td>
-            <td>{row['Matches Played']}</td>
-            <td>{row['Wins']}</td>
-            <td>{row['Losses']}</td>
-        </tr>
-        """
-    table_html += "</table>"
-
-    # Render the HTML table
-    st.markdown(table_html, unsafe_allow_html=True)
+    # Render the test HTML
+    st.markdown(test_html, unsafe_allow_html=True)
     
 elif menu == "Ver Historial de Partidos":
     st.header("📜 Historial de Partidos")
