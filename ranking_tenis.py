@@ -131,10 +131,22 @@ st.title("🎾 Ranking Shishi de Tenis")
 menu = st.sidebar.selectbox("Menu", ["Ver Ranking", "Ver Historial de Partidos", "Anotar Resultado"])
 
 if menu == "Ver Ranking":
-    st.header("📊 Current Rankings - Test Minimal HTML")
+    st.header("📊 Current Rankings - Gradual Build")
 
-    # Minimal HTML with a tooltip for testing
-    test_html = """
+    # Merge Rankings with Player Info
+    rankings_with_info = pd.merge(
+        st.session_state.rankings,
+        st.session_state.player_info,
+        on="Player",
+        how="left"
+    )
+
+    # Replace missing descriptions and images with placeholders
+    rankings_with_info["Description"].fillna("No description available.", inplace=True)
+    rankings_with_info["Image URL"].fillna("https://via.placeholder.com/100", inplace=True)
+
+    # Start the HTML table
+    table_html = """
     <style>
         .tooltip {
             position: relative;
@@ -157,32 +169,49 @@ if menu == "Ver Ranking":
         .tooltip:hover .tooltiptext {
             visibility: visible;
         }
+        .tooltip img {
+            max-width: 100px;
+            height: auto;
+            border-radius: 6px;
+        }
     </style>
     <div>
         <table style="border: 1px solid black; width: 100%; text-align: center;">
             <tr>
+                <th>Rank</th>
                 <th>Player</th>
-                <th>Description</th>
+                <th>Points</th>
+                <th>Matches Played</th>
+                <th>Wins</th>
+                <th>Losses</th>
             </tr>
-            <tr>
-                <td>
-                    <div class="tooltip">
-                        Example Player
-                        <span class="tooltiptext">
-                            <strong>Example Player</strong><br>
-                            Test Description<br>
-                            <img src="https://via.placeholder.com/100" alt="Example Player">
-                        </span>
-                    </div>
-                </td>
-                <td>Test Description</td>
-            </tr>
-        </table>
-    </div>
     """
 
-    # Render the test HTML
-    st.markdown(test_html, unsafe_allow_html=True)
+    # Add rows dynamically
+    for idx, row in rankings_with_info.iterrows():
+        table_html += f"""
+        <tr>
+            <td>{idx + 1}</td>
+            <td>
+                <div class="tooltip">
+                    {row['Player']}
+                    <span class="tooltiptext">
+                        <strong>{row['Player']}</strong><br>
+                        {row['Description']}<br>
+                        <img src="{row['Image URL']}" alt="{row['Player']}">
+                    </span>
+                </div>
+            </td>
+            <td>{row['Points']}</td>
+            <td>{row['Matches Played']}</td>
+            <td>{row['Wins']}</td>
+            <td>{row['Losses']}</td>
+        </tr>
+        """
+    table_html += "</table></div>"
+
+    # Render the table
+    st.markdown(table_html, unsafe_allow_html=True)
     
 elif menu == "Ver Historial de Partidos":
     st.header("📜 Historial de Partidos")
