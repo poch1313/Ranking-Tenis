@@ -63,7 +63,7 @@ def save_data(sheet, rankings, match_history):
     match_history_sheet.update([match_history.columns.values.tolist()] + match_history.values.tolist())
 
 # Connect to Google Sheets
-sheet_name = "Tennis Rankings and Match History"  # Replace with the name of your Google Sheet
+sheet_name = "Tennis Rankings and Match History"  # Replace with your Google Sheet name
 sheet = authenticate_gsheet(sheet_name)
 
 # Initialize data if sheets are empty
@@ -93,10 +93,13 @@ def record_match(winner, loser, base_points=50, upset_multiplier=1.5):
     if winner_points < loser_points:
         points_exchanged *= upset_multiplier
 
+    points_exchanged = int(round(points_exchanged))  # Force to integer
+
     # Update rankings
     rankings.loc[rankings['Player'] == winner, 'Points'] += points_exchanged
     rankings.loc[rankings['Player'] == loser, 'Points'] -= points_exchanged
     rankings['Points'] = rankings['Points'].clip(lower=0)
+    rankings['Points'] = rankings['Points'].astype(int)  # Ensure Points are integers
     rankings.sort_values(by="Points", ascending=False, inplace=True, ignore_index=True)
 
     # Update matches played, wins, and losses
@@ -110,7 +113,7 @@ def record_match(winner, loser, base_points=50, upset_multiplier=1.5):
         "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "Winner": winner,
         "Loser": loser,
-        "Points Exchanged": round(points_exchanged, 2),
+        "Points Exchanged": points_exchanged,
     }
     st.session_state.match_history = pd.concat([match_history, pd.DataFrame([new_match])], ignore_index=True)
 
@@ -127,7 +130,7 @@ if menu == "Ver Ranking":
     # Add a rank column based on the updated ranking order
     rankings = st.session_state.rankings.copy()
     rankings.insert(0, "Rank", range(1, len(rankings) + 1))
-    st.dataframe(rankings.set_index("Rank"))  # Use Rank as the index to remove the unnamed index column
+    st.dataframe(rankings.set_index("Rank"))  # Use Rank as index
 
 elif menu == "Ver Historial de Partidos":
     st.header("📜 Historial de Partidos")
@@ -138,19 +141,16 @@ elif menu == "Ver Historial de Partidos":
 
 elif menu == "Anotar Resultado":
     st.header("🏅 Anotar Resultado")
-    st.write("Enter the winner and loser from the dropdown options below.")
+    st.write("Ingrese el ganador y el perdedor del partido.")
     with st.form("match_form"):
-        winner = st.selectbox("Winner", options=st.session_state.rankings["Player"].to_list())
-        loser = st.selectbox("Loser", options=st.session_state.rankings["Player"].to_list())
-        submit = st.form_submit_button("Record Match")
+        winner = st.selectbox("Ganador", options=st.session_state.rankings["Player"].to_list())
+        loser_options = [player for player in st.session_state.rankings["Player"].to_list() if player != winner]
+        loser = st.selectbox("Perdedor", options=loser_options)
+        submit = st.form_submit_button("Registrar Partido")
         if submit:
-            if winner == loser:
-                st.error("Winner and loser cannot be the same person.")
-            else:
-                record_match(winner, loser)
-                st.success(f"Match recorded: {winner} defeated {loser}.")
-                st.header("Updated Rankings")
-                # Display updated rankings with correct rank numbers
-                updated_rankings = st.session_state.rankings.copy()
-                updated_rankings.insert(0, "Rank", range(1, len(updated_rankings) + 1))
-                st.dataframe(updated_rankings.set_index("Rank"))  # Use Rank as the index to remove the unnamed index column
+            record_match(winner, loser)
+            st.success(f"¡Partido registrado! {winner} derrotó a {loser}.")
+            st.header("Ranking Actualizado")
+            updated_rankings = st.session_state.rankings.copy()
+            updated_rankings.insert(0, "Rank", range(1, len(updated_rankings) + 1))
+            st.dataframe(updated_rankings.set_index("Rank"))
