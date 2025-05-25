@@ -134,11 +134,14 @@ elif menu == "Anotar Resultado":
     else:
         col1, col2 = st.columns(2)
         with col1:
-            winner = st.selectbox("Ganador", options=player_list, key="winner_select")
+            st.selectbox("Ganador", options=player_list, key="winner_select")
         with col2:
-            loser = st.selectbox("Perdedor", options=player_list, key="loser_select")
+            st.selectbox("Perdedor", options=player_list, key="loser_select")
 
         if st.button("Registrar Partido"):
+            winner = st.session_state.get("winner_select")
+            loser = st.session_state.get("loser_select")
+
             if winner == loser:
                 st.error("El ganador y el perdedor no pueden ser el mismo jugador.")
             else:
