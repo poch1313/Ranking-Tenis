@@ -142,15 +142,19 @@ elif menu == "Ver Historial de Partidos":
 elif menu == "Anotar Resultado":
     st.header("🏅 Anotar Resultado")
     st.write("Ingrese el ganador y el perdedor del partido.")
-    with st.form("match_form"):
-        winner = st.selectbox("Ganador", options=st.session_state.rankings["Player"].to_list())
-        loser_options = [player for player in st.session_state.rankings["Player"].to_list() if player != winner]
-        loser = st.selectbox("Perdedor", options=loser_options)
-        submit = st.form_submit_button("Registrar Partido")
-        if submit:
+
+    player_list = list(st.session_state.rankings["Player"])
+    
+    winner = st.selectbox("Ganador", options=player_list, key="winner_select")
+
+    # Only show the remaining players as potential losers
+    loser_options = [p for p in player_list if p != winner]
+    if not loser_options:
+        st.warning("Debe haber al menos dos jugadores para registrar un partido.")
+    else:
+        loser = st.selectbox("Perdedor", options=loser_options, key="loser_select")
+
+        if st.button("Registrar Partido"):
             record_match(winner, loser)
             st.success(f"¡Partido registrado! {winner} derrotó a {loser}.")
-            st.header("Ranking Actualizado")
-            updated_rankings = st.session_state.rankings.copy()
-            updated_rankings.insert(0, "Rank", range(1, len(updated_rankings) + 1))
-            st.dataframe(updated_rankings.set_index("Rank"))
+            st.experimental_rerun()
