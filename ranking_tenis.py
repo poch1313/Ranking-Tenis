@@ -143,18 +143,33 @@ elif menu == "Anotar Resultado":
     st.header("🏅 Anotar Resultado")
     st.write("Ingrese el ganador y el perdedor del partido.")
 
-    player_list = list(st.session_state.rankings["Player"])
-    
-    winner = st.selectbox("Ganador", options=player_list, key="winner_select")
+    # Make a local copy to avoid modifying session_state during rendering
+    player_list = st.session_state.rankings["Player"].tolist()
 
-    # Only show the remaining players as potential losers
-    loser_options = [p for p in player_list if p != winner]
-    if not loser_options:
+    # Check if there are at least two players to record a match
+    if len(player_list) < 2:
         st.warning("Debe haber al menos dos jugadores para registrar un partido.")
     else:
-        loser = st.selectbox("Perdedor", options=loser_options, key="loser_select")
+        # Create columns to make selections side-by-side
+        col1, col2 = st.columns(2)
+
+        with col1:
+            winner = st.selectbox("Ganador", options=player_list, key="winner_select")
+
+        with col2:
+            # Filter loser list based on current winner
+            if winner:
+                loser_options = [p for p in player_list if p != winner]
+            else:
+                loser_options = player_list
+            loser = st.selectbox("Perdedor", options=loser_options, key="loser_select")
 
         if st.button("Registrar Partido"):
-            record_match(winner, loser)
-            st.success(f"¡Partido registrado! {winner} derrotó a {loser}.")
-            st.experimental_rerun()
+            # Double-check that winner and loser are not the same before recording
+            if winner == loser:
+                st.error("El ganador y el perdedor no pueden ser el mismo jugador.")
+            else:
+                record_match(winner, loser)
+                st.success(f"¡Partido registrado! {winner} derrotó a {loser}.")
+                st.experimental_rerun()
+
