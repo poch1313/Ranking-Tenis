@@ -3,6 +3,45 @@ import streamlit as st
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from datetime import timezone
+
+def add_days_since_last_match(rankings_df: pd.DataFrame, match_history_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Returns a copy of rankings_df with:
+      - Last Match (datetime)
+      - Days Since Last Match (int, or None if never played)
+    """
+    out = rankings_df.copy()
+
+    if match_history_df is None or match_history_df.empty:
+        out["Last Match"] = pd.NaT
+        out["Days Since Last Match"] = None
+        return out
+
+    mh = match_history_df.copy()
+
+    # Parse dates safely (your stored format: "%Y-%m-%d %H:%M:%S")
+    mh["Date"] = pd.to_datetime(mh["Date"], errors="coerce")
+
+    # Build a long table of (Player, Date) from Winner/Loser columns
+    w = mh[["Date", "Winner"]].rename(columns={"Winner": "Player"})
+    l = mh[["Date", "Loser"]].rename(columns={"Loser": "Player"})
+    played = pd.concat([w, l], ignore_index=True)
+
+    # Last match per player
+    last_match = played.groupby("Player", as_index=False)["Date"].max().rename(columns={"Date": "Last Match"})
+
+    # Merge into rankings
+    out = out.merge(last_match, on="Player", how="left")
+
+    # Compute days since (use local "now"; if you want UTC consistency, use datetime.now(timezone.utc))
+    now = pd.Timestamp.now()
+    out["Days Since Last Match"] = (now - out["Last Match"]).dt.days
+
+    # Players with no matches -> show blank / None
+    out.loc[out["Last Match"].isna(), "Days Since Last Match"] = None
+
+    return out
 
 # Authenticate and connect to Google Sheets
 def authenticate_gsheet(sheet_name):
@@ -123,11 +162,17 @@ st.title("🎾 Ranking Shishi de Tenis")
 menu = st.sidebar.selectbox("Menu", ["Ver Ranking", "Ver Historial de Partidos", "Anotar Resultado"])
 
 if menu == "Ver Ranking":
-    st.header("📊 Ranking Actual")
-    # Add a rank column based on the updated ranking order
-    rankings = st.session_state.rankings.copy()
-    rankings.insert(0, "Rank", range(1, len(rankings) + 1))
-    st.dataframe(rankings.set_index("Rank"))  # Use Rank as the index to remove the unnamed index column
+       st.header("📊 Ranking Actual")
+
+    rankings_view = add_days_since_last_match(
+        st.session_state.rankings,
+        st.session_state.match_history
+    )
+
+    rankings_view = rankings_view.copy()
+    rankings_view.insert(0, "Rank", range(1, len(rankings_view) + 1))
+
+    st.dataframe(rankings_view.set_index("Rank"))
 
 elif menu == "Ver Historial de Partidos":
     st.header("📜 Historial de Partidos")
@@ -151,6 +196,9 @@ elif menu == "Anotar Resultado":
                 st.success(f"Match recorded: {winner} defeated {loser}.")
                 st.header("Updated Rankings")
                 # Display updated rankings with correct rank numbers
-                updated_rankings = st.session_state.rankings.copy()
+                updated_rankings = add_days_since_last_match(
+    st.session_state.rankings,
+    st.session_state.match_history
+)
                 updated_rankings.insert(0, "Rank", range(1, len(updated_rankings) + 1))
                 st.dataframe(updated_rankings.set_index("Rank"))  # Use Rank as the index to remove the unnamed index column
