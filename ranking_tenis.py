@@ -162,11 +162,11 @@ st.title("🎾 Ranking Shishi de Tenis")
 menu = st.sidebar.selectbox("Menu", ["Ver Ranking", "Ver Historial de Partidos", "Anotar Resultado"])
 
 if menu == "Ver Ranking":
-       st.header("📊 Ranking Actual")
+    st.header("📊 Ranking Actual")
 
     rankings_view = add_days_since_last_match(
-        st.session_state.rankings,
-        st.session_state.match_history
+    st.session_state.rankings,
+    st.session_state.match_history
     )
 
     rankings_view = rankings_view.copy()
